@@ -14,6 +14,9 @@ AsyncWebServer server(SERVER_PORT);
 void setup() {
   Serial.begin(115200);
   
+  // Initialize relays first to ensure they start in OFF state
+  setupRelays();
+  
   // Initialize reset button
   setupResetButton();
   
@@ -23,7 +26,6 @@ void setup() {
   
   if (isEthernetConnected()) {
     Serial.println("Ethernet connected! No need for WiFi");
-    setupRelays();
     setupMQTT();
     return;
   }
@@ -46,7 +48,6 @@ void setup() {
     if(connectToWiFi(saved_ssid.c_str(), saved_password.c_str())) {
       Serial.println("Connected to WiFi");
       isInAPMode = false;
-      setupRelays();
       setupMQTT();
       return;
     } else {
@@ -82,6 +83,8 @@ void loop() {
       handleMQTT();
     }
   }
+
+  delay(100);
 }
   
  
