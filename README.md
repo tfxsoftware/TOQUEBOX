@@ -1,6 +1,6 @@
-# NIOBOX V4
+# TOQUEBOX
 
-Dispositivo IoT baseado em ESP32 para controle de relés com recursos WiFi, Ethernet e MQTT.
+Dispositivo IoT baseado em ESP32 para controle de portas utilizando relés
 
 ## Funcionalidades
 
