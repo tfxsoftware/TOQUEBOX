@@ -41,6 +41,7 @@ void setup() {
     if(connectToWiFi(saved_ssid.c_str(), saved_password.c_str())) {
       Serial.println("Connected to WiFi");
       isInAPMode = false;
+      setupRelays();
       return;
     } else {
       // Connection failed
@@ -66,15 +67,23 @@ void loop() {
   // Always check reset button
   checkResetButton();
 
-  // If Ethernet is connected, no need to manage WiFi
-  if (isEthernetConnected()) {
-    delay(100);
-    return;
+  if (!isInAPMode) {
+    if (!isEthernetConnected()) {
+      checkWiFiConnection(server);
+    }
   }
 
-  checkWiFiConnection(server);
-  
+  pulseRelay(RELAY_1_PIN);
   delay(100);  // Small delay to prevent overwhelming the CPU
-}
+  pulseRelay(RELAY_2_PIN);
+  delay(100);  // Small delay to prevent overwhelming the CPU
+  pulseRelay(RELAY_3_PIN);
+  delay(100);  // Small delay to prevent overwhelming the CPU
+  pulseRelay(RELAY_4_PIN);
+  delay(100);  // Small delay to prevent overwhelming the CPU
+  }
+  
+ 
+
 
 
