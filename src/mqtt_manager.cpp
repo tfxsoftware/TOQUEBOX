@@ -33,16 +33,12 @@ void onMQTTMessage(char* topic, byte* payload, unsigned int length) {
   // Parse the message and control relays
   if (strcmp(message, "RELAY1") == 0) {
     pulseRelay(RELAY_1_PIN);
-    publishMQTT("RELAY1:OK");  // Acknowledge command
   } else if (strcmp(message, "RELAY2") == 0) {
     pulseRelay(RELAY_2_PIN);
-    publishMQTT("RELAY2:OK");
   } else if (strcmp(message, "RELAY3") == 0) {
     pulseRelay(RELAY_3_PIN);
-    publishMQTT("RELAY3:OK");
   } else if (strcmp(message, "RELAY4") == 0) {
     pulseRelay(RELAY_4_PIN);
-    publishMQTT("RELAY4:OK");
   }
 }
 
@@ -63,9 +59,6 @@ void setupMQTT() {
     Serial.println("Connected to MQTT server");
     mqttClient.subscribe(DEVICE_TOPIC);
     Serial.printf("Subscribed to topic: %s\n", DEVICE_TOPIC);
-    
-    // Publish initial status
-    mqttClient.publish(DEVICE_TOPIC, "online", true);  // retained message
   } else {
     Serial.println("Failed to connect to MQTT server. Will retry in loop...");
   }
@@ -76,9 +69,6 @@ bool reconnectMQTT() {
     Serial.println("Reconnected to MQTT server");
     mqttClient.subscribe(DEVICE_TOPIC);
     Serial.printf("Subscribed to topic: %s\n", DEVICE_TOPIC);
-    
-    // Publish reconnection status
-    mqttClient.publish(DEVICE_TOPIC, "online", true);  // retained message
     return true;
   }
   return false;
