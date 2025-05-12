@@ -6,6 +6,7 @@
 #include <ETH.h>
 #include "config.h"
 #include "webpage.h"
+#include "mqtt_manager.h"
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(SERVER_PORT);
@@ -15,14 +16,18 @@ void setup() {
   
   // Initialize reset button
   setupResetButton();
-    // Initialize and check Ethernet first
+  
+  // Initialize and check Ethernet first
   Serial.println("Initializing Ethernet...");
   setupEthernet();
   
   if (isEthernetConnected()) {
     Serial.println("Ethernet connected! No need for WiFi");
+    setupRelays();
+    setupMQTT();
     return;
   }
+  
   Serial.println("No Ethernet connection, trying WiFi...");
   // Initialize SPIFFS
   if(!SPIFFS.begin(true)) {
@@ -42,6 +47,7 @@ void setup() {
       Serial.println("Connected to WiFi");
       isInAPMode = false;
       setupRelays();
+      setupMQTT();
       return;
     } else {
       // Connection failed
@@ -71,17 +77,12 @@ void loop() {
     if (!isEthernetConnected()) {
       checkWiFiConnection(server);
     }
+    // Handle MQTT if we have a connection (either WiFi or Ethernet)
+    if (isEthernetConnected() || WiFi.status() == WL_CONNECTED) {
+      handleMQTT();
+    }
   }
-
-  pulseRelay(RELAY_1_PIN);
-  delay(100);  // Small delay to prevent overwhelming the CPU
-  pulseRelay(RELAY_2_PIN);
-  delay(100);  // Small delay to prevent overwhelming the CPU
-  pulseRelay(RELAY_3_PIN);
-  delay(100);  // Small delay to prevent overwhelming the CPU
-  pulseRelay(RELAY_4_PIN);
-  delay(100);  // Small delay to prevent overwhelming the CPU
-  }
+}
   
  
 
