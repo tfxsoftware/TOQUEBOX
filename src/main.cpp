@@ -7,13 +7,16 @@
 #include "config.h"
 #include "webpage.h"
 #include "mqtt_manager.h"
-
+#include <esp_ota_ops.h>
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(SERVER_PORT);
 
 void setup() {
   Serial.begin(115200);
   
+
+  const esp_partition_t *running = esp_ota_get_running_partition();
+  Serial.printf("[LOG] Current running partition: %s\n", running->label);
   // Initialize relays first to ensure they start in OFF state
   setupRelays();
   
