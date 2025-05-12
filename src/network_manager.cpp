@@ -1,13 +1,10 @@
-#include "config.h"
+#include "network_manager.h"
+#include "storage_manager.h"
 #include "webpage.h"
 
 // WiFi Configuration Constants
 const char* AP_SSID = "TOQUEBOX-SETUP";
 const char* WIFI_FILE = "/wifi_creds.txt";
-const char* FIRST_CONNECT_FLAG = "/first_connect.flag";
-
-// Server Configuration Constants
-const int SERVER_PORT = 80;
 
 // Connection Configuration Constants
 const int MAX_CONNECTION_ATTEMPTS = 20;
@@ -20,28 +17,11 @@ uint8_t reconnectAttempts = 0;                  // Current reconnection attempts
 bool isInAPMode = false;                        // AP mode status
 unsigned long lastReconnectAttempt = 0;         // Last reconnection attempt timestamp
 
-// Hardware Configuration Constants
-const int RESET_BUTTON_PIN = 13;  // Reset button on GPIO13
-
 // Ethernet Pin Configuration
 const uint8_t ETH_ADDR = 1;     // PHY Address
 const int POWER_PIN = 17;       // GPIO17 - Power Pin
 const int MDC_PIN = 23;         // GPIO23 - MDC Pin
 const int MDIO_PIN = 18;        // GPIO18 - MDIO Pin
-
-// RMII Interface (these are implicit in the ESP32 hardware configuration)
-// GPIO0  - RMII_CLK
-// GPIO25 - RMII_RXD0
-// GPIO26 - RMII_RXD1
-// GPIO27 - RMII_CRS_DV
-// GPIO22 - RMII_TXD0
-// GPIO21 - RMII_TXD1
-// GPIO19 - RMII_TX_EN
-
-// Button debounce variables
-unsigned long lastDebounceTime = 0;
-const unsigned long debounceDelay = 50;  // 50ms debounce time
-int lastButtonState = HIGH;
 
 // Ethernet connection flag
 bool ethConnected = false;
@@ -106,92 +86,6 @@ bool isEthernetConnected() {
   return ethConnected && ETH.linkSpeed() > 0;
 }
 
-void setupResetButton() {
-  pinMode(RESET_BUTTON_PIN, INPUT_PULLUP);
-  Serial.println("Reset button initialized on pin " + String(RESET_BUTTON_PIN));
-}
-
-void checkResetButton() {
-  int reading = digitalRead(RESET_BUTTON_PIN);
-
-  // If the button state has changed, reset the debounce timer
-  if (reading != lastButtonState) {
-    lastDebounceTime = millis();
-  }
-
-  // If enough time has passed since the last change
-  if ((millis() - lastDebounceTime) > debounceDelay) {
-    // If the button is pressed (LOW because of INPUT_PULLUP)
-    if (reading == LOW) {
-      Serial.println("\nReset button pressed!");
-      Serial.println("Clearing SPIFFS and restarting...");
-      SPIFFS.format();
-      ESP.restart();
-    }
-  }
-
-  lastButtonState = reading;
-}
-
-bool isFirstConnection() {
-  return !SPIFFS.exists(FIRST_CONNECT_FLAG);
-}
-
-void setFirstConnectionFlag(bool isFirst) {
-  if (isFirst) {
-    if (SPIFFS.exists(FIRST_CONNECT_FLAG)) {
-      SPIFFS.remove(FIRST_CONNECT_FLAG);
-    }
-  } else {
-    File flagFile = SPIFFS.open(FIRST_CONNECT_FLAG, "w");
-    if (flagFile) {
-      flagFile.println("1");
-      flagFile.close();
-    }
-  }
-}
-
-void clearSPIFFSAndRestart() {
-  Serial.println("First connection failed. Clearing SPIFFS and restarting...");
-  SPIFFS.format();
-  ESP.restart();
-}
-
-bool loadWiFiCredentials(String &ssid, String &password) {
-  if(SPIFFS.exists(WIFI_FILE)) {
-    File file = SPIFFS.open(WIFI_FILE, "r");
-    if(file) {
-      ssid = file.readStringUntil('\n');
-      password = file.readStringUntil('\n');
-      file.close();
-      ssid.trim();
-      password.trim();
-      return true;
-    }
-  }
-  return false;
-}
-
-void saveWiFiCredentials(const char* ssid, const char* password) {
-  Serial.println("Saving WiFi credentials:");
-  Serial.print("SSID: ");
-  Serial.println(ssid);
-  Serial.print("Password: ");
-  Serial.println(password);
-  
-  File file = SPIFFS.open(WIFI_FILE, "w");
-  if(file) {
-    file.println(ssid);
-    file.println(password);
-    file.close();
-    Serial.println("Credentials saved successfully");
-  } else {
-    Serial.println("Failed to save credentials!");
-  }
-  // After successfully saving credentials, set the first connection flag
-  setFirstConnectionFlag(true);
-}
-
 bool connectToWiFi(const char* ssid, const char* password) {
   Serial.print("Attempting to connect to WiFi network: ");
   Serial.println(ssid);
@@ -203,16 +97,12 @@ bool connectToWiFi(const char* ssid, const char* password) {
     delay(CONNECTION_DELAY);
     Serial.print(".");
     attempts++;
-    
-    // Check reset button during connection attempts
-    checkResetButton();
   }
   Serial.println();
   
   bool connected = WiFi.status() == WL_CONNECTED;
   if (connected) {
     Serial.println("Successfully connected to WiFi!");
-    // If connection successful, mark it as not first connection
     setFirstConnectionFlag(false);
   } else {
     Serial.println("Failed to connect to WiFi");

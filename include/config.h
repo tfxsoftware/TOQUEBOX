@@ -1,6 +1,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "network_manager.h"
+#include "storage_manager.h"
+#include "hardware_manager.h"
+#include "web_manager.h"
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <ETH.h>
