@@ -1,5 +1,6 @@
 #include "mqtt_manager.h"
 #include "hardware_manager.h"
+#include <ArduinoJson.h>
 
 // MQTT Configuration Constants
 const char* MQTT_HOST = "186.209.52.208";
@@ -30,14 +31,30 @@ void onMQTTMessage(char* topic, byte* payload, unsigned int length) {
 
   Serial.printf("Message received on topic %s: %s\n", topic, message);
 
-  // Parse the message and control relays
-  if (strcmp(message, "RELAY1") == 0) {
+  // Parse JSON message
+  StaticJsonDocument<200> doc;
+  DeserializationError error = deserializeJson(doc, message);
+
+  if (error) {
+    Serial.printf("JSON parsing failed: %s\n", error.c_str());
+    return;
+  }
+
+  const char* pattern = doc["pattern"];
+  if (strcmp(pattern, DEVICE_TOPIC) != 0) {
+    Serial.println("Message pattern doesn't match device topic");
+    return;
+  }
+  
+  const char* data = doc["data"];
+  
+  if (strcmp(data, "RELAY1") == 0) {
     pulseRelay(RELAY_1_PIN);
-  } else if (strcmp(message, "RELAY2") == 0) {
+  } else if (strcmp(data, "RELAY2") == 0) {
     pulseRelay(RELAY_2_PIN);
-  } else if (strcmp(message, "RELAY3") == 0) {
+  } else if (strcmp(data, "RELAY3") == 0) {
     pulseRelay(RELAY_3_PIN);
-  } else if (strcmp(message, "RELAY4") == 0) {
+  } else if (strcmp(data, "RELAY4") == 0) {
     pulseRelay(RELAY_4_PIN);
   }
 }
