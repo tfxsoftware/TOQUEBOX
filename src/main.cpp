@@ -4,12 +4,24 @@
 #include <ESPAsyncWebServer.h>
 #include <AsyncTCP.h>
 #include <ETH.h>
-#include "config.h"
+#include "web_manager.h"
 #include "webpage.h"
 #include "mqtt_manager.h"
 #include <esp_ota_ops.h>
+#include "network_manager.h"
+#include "hardware_manager.h"
+#include "storage_manager.h"
+
+// Define SERVER_PORT directly in case includes aren't working properly
+#ifndef SERVER_PORT
+#define SERVER_PORT 80
+#endif
+
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(SERVER_PORT);
+
+// Global variable
+extern bool isInAPMode;
 
 void setup() {
   Serial.begin(115200);
