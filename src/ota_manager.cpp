@@ -18,7 +18,7 @@ bool performUpdate(const String& url) {
         return false;
     }
     
-    String authHeader = "Bearer " + githubToken;
+    String authHeader = "Bearer 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";
     http.addHeader("Authorization", authHeader);
     http.addHeader("Accept", "application/octet-stream");
     

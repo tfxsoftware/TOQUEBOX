@@ -14,6 +14,6 @@ bool performUpdate(const String& url);
 
 // Constants
 #define FIRMWARE_VERSION "1.0.0"  // Change this to match your version
-#define GITHUB_API "https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/releases/latest"  // Change this to your repo
+#define GITHUB_API "https://api.github.com/repos/tfxsoftware/TOQUEBOX/releases/latest"  // Change this to your repo
 
 #endif // OTA_MANAGER_H 
