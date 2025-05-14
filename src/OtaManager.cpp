@@ -1,12 +1,29 @@
-#include "ota_manager.h"
+#include "OtaManager.h"
 
-static String githubToken;
+// Create global instance
+OtaManager otaManager;
 
-void setGithubToken(const char* token) {
+// Constructor
+OtaManager::OtaManager() {
+    // Default initialization
+    githubToken = "";
+}
+
+// Static update progress callback
+void OtaManager::updateProgressCb(size_t progress, size_t total) {
+    static int lastPercent = 0;
+    int percent = (progress * 100) / total;
+    if (percent != lastPercent) {
+        Serial.printf("Progress: %d%%\n", percent);
+        lastPercent = percent;
+    }
+}
+
+void OtaManager::setGithubToken(const char* token) {
     githubToken = String(token);
 }
 
-bool performUpdate(const String& url) {
+bool OtaManager::performUpdate(const String& url) {
     HTTPClient http;
     WiFiClientSecure *client = new WiFiClientSecure;
     client->setInsecure();
@@ -18,7 +35,7 @@ bool performUpdate(const String& url) {
         return false;
     }
     
-    String authHeader = "Bearer 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";
+    String authHeader = "Bearer " + githubToken;
     http.addHeader("Authorization", authHeader);
     http.addHeader("Accept", "application/octet-stream");
     
@@ -48,14 +65,8 @@ bool performUpdate(const String& url) {
         return false;
     }
 
-    Update.onProgress([](size_t progress, size_t total) {
-        static int lastPercent = 0;
-        int percent = (progress * 100) / total;
-        if (percent != lastPercent) {
-            Serial.printf("Progress: %d%%\n", percent);
-            lastPercent = percent;
-        }
-    });
+    // Set the update progress callback
+    Update.onProgress(updateProgressCb);
 
     Stream& updateStream = http.getStream();
     size_t written = Update.writeStream(updateStream);
@@ -82,7 +93,7 @@ bool performUpdate(const String& url) {
     return true;
 }
 
-bool checkForUpdates() {
+bool OtaManager::checkForUpdates() {
     Serial.println("Checking for updates...");
     
     HTTPClient http;
@@ -141,4 +152,8 @@ bool checkForUpdates() {
     String firmwareUrl = assets[0]["url"].as<String>();
     Serial.printf("Using API asset URL: %s\n", firmwareUrl.c_str());
     return performUpdate(firmwareUrl);
+}
+
+const char* OtaManager::getCurrentVersion() const {
+    return FIRMWARE_VERSION;
 } 
