@@ -11,7 +11,7 @@
 #include <HTTPClient.h>
 
 // API endpoint constants
-const char* API_ENDPOINT_BASE = "https://xtg08wff-3333.brs.devtunnelss.ms/";
+const char* API_ENDPOINT_BASE = "https://xtg08wff-3333.brs.devtunnels.ms/";
 const char* API_ENDPOINT_MAPPING = "api/hardware/{}/model-port-mapping";
 
 // External reference to the relay mapping array in hardware_manager.cpp
