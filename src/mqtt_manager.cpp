@@ -40,11 +40,6 @@ void onMQTTMessage(char* topic, byte* payload, unsigned int length) {
     return;
   }
 
-  const char* pattern = doc["pattern"];
-  if (strcmp(pattern, DEVICE_TOPIC) != 0) {
-    Serial.println("Message pattern doesn't match device topic");
-    return;
-  }
   
   const char* data = doc["data"];
   
