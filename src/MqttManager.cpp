@@ -1,38 +1,29 @@
 #include "MqttManager.h"
 #include "HardwareManager.h"
 
-// Initialize static member
 MqttManager* MqttManager::instance = nullptr;
 
-// Create the global instance
 MqttManager mqttManager;
 
-// Constructor
 MqttManager::MqttManager() : mqttClient(espClient) {
-    // Initialize deviceTopic with zeros
     memset(deviceTopic, 0, sizeof(deviceTopic));
     
-    // Set this instance as the active one for callbacks
     instance = this;
 }
 
-// Static callback bridge - redirects to instance method
 void MqttManager::staticCallback(char* topic, byte* payload, unsigned int length) {
-    // Make sure we have a valid instance
     if (instance) {
         instance->messageCallback(topic, payload, length);
     }
 }
 
 void MqttManager::messageCallback(char* topic, byte* payload, unsigned int length) {
-    // Create a null-terminated string from the payload
     char message[length + 1];
     memcpy(message, payload, length);
     message[length] = '\0';
 
     Serial.printf("Message received on topic %s: %s\n", topic, message);
 
-    // Parse JSON message
     StaticJsonDocument<200> doc;
     DeserializationError error = deserializeJson(doc, message);
 
@@ -41,19 +32,15 @@ void MqttManager::messageCallback(char* topic, byte* payload, unsigned int lengt
         return;
     }
 
-    // Get the data field
     const char* data = doc["data"];
     if (!data) {
         Serial.println("No 'data' field in JSON message");
         return;
     }
     
-    // Check if it's a relay command (format: "RELAY1", "RELAY2", etc.)
     if (strncmp(data, "RELAY", 5) == 0) {
-        // Extract the relay number
-        int relayNum = atoi(data + 5) - 1;  // Convert to 0-based index
+        int relayNum = atoi(data + 5) - 1;  
         
-        // Check if it's a valid relay number
         if (relayNum >= 0 && relayNum < hardwareManager.getActiveRelayCount() && hardwareManager.getRelayPin(relayNum) > 0) {
             Serial.printf("Activating relay %d (GPIO %d)\n", relayNum + 1, hardwareManager.getRelayPin(relayNum));
             hardwareManager.pulseRelay(hardwareManager.getRelayPin(relayNum));
@@ -66,7 +53,6 @@ void MqttManager::messageCallback(char* topic, byte* payload, unsigned int lengt
 void MqttManager::generateDeviceTopic() {
     uint8_t mac[6];
     WiFi.macAddress(mac);
-    // Format as a continuous string of hex digits without colons
     snprintf(deviceTopic, sizeof(deviceTopic), "%02X%02X%02X%02X%02X%02X", 
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     
@@ -76,7 +62,6 @@ void MqttManager::generateDeviceTopic() {
 void MqttManager::setup() {
     Serial.println("\nInitializing MQTT...");
     
-    // Generate MAC-based topic
     generateDeviceTopic();
     
     Serial.printf("Device Topic (MAC): %s\n", deviceTopic);
@@ -85,7 +70,6 @@ void MqttManager::setup() {
     mqttClient.setServer(MQTT_HOST, MQTT_PORT);
     mqttClient.setCallback(staticCallback);
     
-    // Initial connection attempt
     if (mqttClient.connect(deviceTopic)) {
         Serial.println("Connected to MQTT server");
         mqttClient.subscribe(deviceTopic);

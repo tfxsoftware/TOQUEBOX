@@ -1,16 +1,12 @@
 #include "StorageManager.h"
 #include "NetworkManager.h"
 
-// Create global instance
 StorageManager storageManager;
 
-// Constructor
 StorageManager::StorageManager() {
-    // Nothing to initialize yet
 }
 
 bool StorageManager::begin() {
-    // Initialize SPIFFS
     return SPIFFS.begin(true);
 }
 
@@ -45,7 +41,6 @@ void StorageManager::saveWiFiCredentials(const char* ssid, const char* password)
     } else {
         Serial.println("Failed to save credentials!");
     }
-    // After successfully saving credentials, set the first connection flag
     setFirstConnectionFlag(true);
 }
 

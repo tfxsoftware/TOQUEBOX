@@ -4,27 +4,20 @@
 #include "WebManager.h"
 #include <ESP.h>
 
-// Initialize static member
 NetworkManager* NetworkManager::instance = nullptr;
 
-// Create global instance
 NetworkManager networkManager;
 
-// Constructor
 NetworkManager::NetworkManager() {
-    // Set this instance as the active one for callbacks
     instance = this;
     
-    // Initialize state variables
     reconnectAttempts = 0;
     ethConnected = false;
     lastReconnectAttempt = 0;
     inAPMode = false;
 }
 
-// Static callback bridge - redirects to instance method
 void NetworkManager::staticWiFiEventHandler(WiFiEvent_t event) {
-    // Make sure we have a valid instance
     if (instance) {
         instance->wifiEventHandler(event);
     }
@@ -34,7 +27,7 @@ void NetworkManager::wifiEventHandler(WiFiEvent_t event) {
     switch (event) {
         case ARDUINO_EVENT_ETH_START:
             Serial.println("ETH Started");
-            ETH.setHostname("TOQUEBOX");  // Set hostname for Ethernet
+            ETH.setHostname("TOQUEBOX");  
             break;
         case ARDUINO_EVENT_ETH_CONNECTED:
             Serial.println("ETH Connected");
@@ -71,18 +64,17 @@ void NetworkManager::setupEthernet() {
     Serial.println("MDC Pin: GPIO" + String(MDC_PIN));
     Serial.println("MDIO Pin: GPIO" + String(MDIO_PIN));
     
-    WiFi.onEvent(staticWiFiEventHandler);  // Register Ethernet event handler
+    WiFi.onEvent(staticWiFiEventHandler);  
     
     ETH.begin(
-        ETH_ADDR,           // PHY address
-        POWER_PIN,          // Power pin
-        MDC_PIN,            // MDC pin
-        MDIO_PIN,           // MDIO pin
-        ETH_PHY_LAN8720,    // PHY type
-        ETH_CLOCK_GPIO0_IN  // Clock mode
+        ETH_ADDR,           
+        POWER_PIN,          
+        MDC_PIN,            
+        MDIO_PIN,           
+        ETH_PHY_LAN8720,    
+        ETH_CLOCK_GPIO0_IN  
     );
     
-    // Wait a bit for Ethernet to initialize
     delay(2000);
 }
 
@@ -115,20 +107,17 @@ bool NetworkManager::connectToWiFi(const char* ssid, const char* password) {
 }
 
 void NetworkManager::setupAP(AsyncWebServer &server) {
-    WiFi.softAP(AP_SSID);  // Create an open access point
+    WiFi.softAP(AP_SSID);  
     Serial.println("Access Point Started (Open Network)");
     Serial.print("IP Address: ");
     Serial.println(WiFi.softAPIP());
     
-    // Set AP mode flag
     inAPMode = true;
 
-    // Route for root / web page
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send(200, "text/html", index_html);
     });
 
-    // Route to handle form submission
     server.on("/save", HTTP_POST, [](AsyncWebServerRequest *request){
         String ssid, password;
         if(request->hasParam("ssid", true) && request->hasParam("password", true)) {
@@ -153,7 +142,6 @@ void NetworkManager::setupAP(AsyncWebServer &server) {
         }
     });
 
-    // Start the server using WebManager to ensure proper state tracking
     webManager.startServer();
 }
 
@@ -170,7 +158,7 @@ bool NetworkManager::handleWiFiReconnection(AsyncWebServer &server) {
     if (connectToWiFi(saved_ssid.c_str(), saved_password.c_str())) {
         Serial.println("WiFi reconnected successfully!");
         Serial.printf("IP address: %s\n", WiFi.localIP().toString().c_str());
-        reconnectAttempts = 0;  // Reset counter on successful connection
+        reconnectAttempts = 0;  
         return true;
     }
     
@@ -179,8 +167,8 @@ bool NetworkManager::handleWiFiReconnection(AsyncWebServer &server) {
     if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
         Serial.println("Maximum reconnection attempts reached!");
         Serial.println("Switching to AP mode...");
-        setupAP(server);  // This will start the server as needed
-        reconnectAttempts = 0;  // Reset counter
+        setupAP(server);  
+        reconnectAttempts = 0;  
         return false;
     }
     

@@ -1,15 +1,11 @@
 #include "OtaManager.h"
 
-// Create global instance
 OtaManager otaManager;
 
-// Constructor
 OtaManager::OtaManager() {
-    // Default initialization
     githubToken = "";
 }
 
-// Static update progress callback
 void OtaManager::updateProgressCb(size_t progress, size_t total) {
     static int lastPercent = 0;
     int percent = (progress * 100) / total;
@@ -65,7 +61,6 @@ bool OtaManager::performUpdate(const String& url) {
         return false;
     }
 
-    // Set the update progress callback
     Update.onProgress(updateProgressCb);
 
     Stream& updateStream = http.getStream();
