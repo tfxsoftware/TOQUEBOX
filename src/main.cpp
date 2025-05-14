@@ -11,7 +11,7 @@
 #include "network_manager.h"
 #include "hardware_manager.h"
 #include "storage_manager.h"
-
+#include "api_manager.h"
 // Define SERVER_PORT directly in case includes aren't working properly
 #ifndef SERVER_PORT
 #define SERVER_PORT 80
@@ -29,7 +29,8 @@ void setup() {
 
   const esp_partition_t *running = esp_ota_get_running_partition();
   Serial.printf("[LOG] Current running partition: %s\n", running->label);
-  // Initialize relays first to ensure they start in OFF state
+  
+  // Initialize relays
   setupRelays();
   
   // Initialize reset button
@@ -41,6 +42,7 @@ void setup() {
   
   if (isEthernetConnected()) {
     Serial.println("Ethernet connected! No need for WiFi");
+    // Try to get device mapping from API
     setupMQTT();
     return;
   }
@@ -63,6 +65,8 @@ void setup() {
     if(connectToWiFi(saved_ssid.c_str(), saved_password.c_str())) {
       Serial.println("Connected to WiFi");
       isInAPMode = false;
+      // Try to get device mapping from API
+      getDeviceMapping();
       setupMQTT();
       return;
     } else {
