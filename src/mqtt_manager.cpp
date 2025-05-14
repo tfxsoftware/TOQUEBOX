@@ -7,6 +7,9 @@ const char* MQTT_HOST = "186.209.52.208";
 const int MQTT_PORT = 1883;
 char DEVICE_TOPIC[13];  // Buffer for MAC-based topic (12 chars + null terminator)
 
+// External reference to the relay mapping array
+extern int RELAY_PINS[MAX_RELAYS];
+
 // MQTT Client
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -19,8 +22,11 @@ unsigned long lastMQTTReconnectAttempt = 0;
 void generateDeviceTopic() {
   uint8_t mac[6];
   WiFi.macAddress(mac);
+  // Format as a continuous string of hex digits without colons
   snprintf(DEVICE_TOPIC, sizeof(DEVICE_TOPIC), "%02X%02X%02X%02X%02X%02X", 
            mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  
+  Serial.printf("Generated MQTT topic from MAC: %s\n", DEVICE_TOPIC);
 }
 
 void onMQTTMessage(char* topic, byte* payload, unsigned int length) {
@@ -40,17 +46,25 @@ void onMQTTMessage(char* topic, byte* payload, unsigned int length) {
     return;
   }
 
-  
+  // Get the data field
   const char* data = doc["data"];
+  if (!data) {
+    Serial.println("No 'data' field in JSON message");
+    return;
+  }
   
-  if (strcmp(data, "RELAY1") == 0) {
-    pulseRelay(RELAY_1_PIN);
-  } else if (strcmp(data, "RELAY2") == 0) {
-    pulseRelay(RELAY_2_PIN);
-  } else if (strcmp(data, "RELAY3") == 0) {
-    pulseRelay(RELAY_3_PIN);
-  } else if (strcmp(data, "RELAY4") == 0) {
-    pulseRelay(RELAY_4_PIN);
+  // Check if it's a relay command (format: "RELAY1", "RELAY2", etc.)
+  if (strncmp(data, "RELAY", 5) == 0) {
+    // Extract the relay number
+    int relayNum = atoi(data + 5) - 1;  // Convert to 0-based index
+    
+    // Check if it's a valid relay number
+    if (relayNum >= 0 && relayNum < MAX_RELAYS && RELAY_PINS[relayNum] > 0) {
+      Serial.printf("Activating relay %d (GPIO %d)\n", relayNum + 1, RELAY_PINS[relayNum]);
+      pulseRelay(RELAY_PINS[relayNum]);
+    } else {
+      Serial.printf("Invalid relay number: %d\n", relayNum + 1);
+    }
   }
 }
 
