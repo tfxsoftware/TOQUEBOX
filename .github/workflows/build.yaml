@@ -34,7 +34,7 @@ jobs:
         
     - name: Build firmware
       run: |
-        pio run -e esp32dev
+        pio run -e esp32doit-devkit-v1
         
     - name: Create Release
       id: create_release
