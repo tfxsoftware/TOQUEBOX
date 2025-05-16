@@ -37,7 +37,6 @@ void setup() {
     mqttManager.setup();
     
     Serial.println("Checking for OTA updates...");
-    otaManager.setGithubToken("your_github_token_here");
     otaManager.checkForUpdates();
     return;
   }
@@ -61,7 +60,6 @@ void setup() {
       mqttManager.setup();
       
       Serial.println("Checking for OTA updates...");
-      otaManager.setGithubToken("your_github_token_here");
       otaManager.checkForUpdates();
       return;
     } else {
