@@ -10,7 +10,8 @@
 class ApiManager {
 private:
     static constexpr const char* API_ENDPOINT_BASE = "https://tfxsoft.com/";
-    static constexpr const char* API_ENDPOINT_MAPPING = "api/hardware/{}/model-port-mapping";
+    // static constexpr const char* API_ENDPOINT_BASE = "https://toquetoque.nectarlabs.com.br/api";
+    static constexpr const char* API_ENDPOINT_MAPPING = "hardware/{}/model-port-mapping";
     
     String formatMacWithoutColons(const String& macAddress);
     
