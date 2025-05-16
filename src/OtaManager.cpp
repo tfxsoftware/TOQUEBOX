@@ -3,7 +3,6 @@
 OtaManager otaManager;
 
 OtaManager::OtaManager() {
-    githubToken = "";
 }
 
 void OtaManager::updateProgressCb(size_t progress, size_t total) {
@@ -13,10 +12,6 @@ void OtaManager::updateProgressCb(size_t progress, size_t total) {
         Serial.printf("Progress: %d%%\n", percent);
         lastPercent = percent;
     }
-}
-
-void OtaManager::setGithubToken(const char* token) {
-    githubToken = String(token);
 }
 
 bool OtaManager::performUpdate(const String& url) {
@@ -31,7 +26,7 @@ bool OtaManager::performUpdate(const String& url) {
         return false;
     }
     
-    String authHeader = "Bearer " + githubToken;
+    const char* authHeader = ("Bearer " + String(GITHUB_TOKEN)).c_str();
     http.addHeader("Authorization", authHeader);
     http.addHeader("Accept", "application/octet-stream");
     
@@ -102,7 +97,7 @@ bool OtaManager::checkForUpdates() {
         return false;
     }
     
-    String authHeader = "Bearer " + githubToken;
+    const char* authHeader = ("Bearer " + String(GITHUB_TOKEN)).c_str();
     http.addHeader("Authorization", authHeader);
     
     int httpCode = http.GET();
