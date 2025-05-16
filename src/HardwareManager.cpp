@@ -1,6 +1,5 @@
 #include "HardwareManager.h"
 #include <SPIFFS.h>
-#include <ESP.h>
 
 HardwareManager hardwareManager;
 
