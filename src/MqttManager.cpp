@@ -1,5 +1,6 @@
 #include "MqttManager.h"
 #include "HardwareManager.h"
+#include "OtaManager.h"
 
 MqttManager* MqttManager::instance = nullptr;
 
@@ -83,6 +84,7 @@ void MqttManager::setup() {
         mqttClient.subscribe(deviceTopic);
         Serial.printf("Subscribed to topic: %s\n", deviceTopic);
         mqttClient.subscribe("commands");
+        Serial.printf("Subscribed to topic: commands\n");
     } else {
         Serial.println("Failed to connect to MQTT server. Will retry in loop...");
     }
@@ -94,6 +96,7 @@ bool MqttManager::reconnect() {
         mqttClient.subscribe(deviceTopic);
         Serial.printf("Subscribed to topic: %s\n", deviceTopic);
         mqttClient.subscribe("commands");
+        Serial.printf("Subscribed to topic: commands\n");
         return true;
     }
     return false;
