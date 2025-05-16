@@ -26,7 +26,7 @@ bool OtaManager::performUpdate(const String& url) {
         return false;
     }
     
-    const char* authHeader = ("Bearer " + String(GITHUB_TOKEN)).c_str();
+    String authHeader = "Bearer " + String(GITHUB_TOKEN);
     http.addHeader("Authorization", authHeader);
     http.addHeader("Accept", "application/octet-stream");
     
@@ -97,7 +97,7 @@ bool OtaManager::checkForUpdates() {
         return false;
     }
     
-    const char* authHeader = ("Bearer " + String(GITHUB_TOKEN)).c_str();
+    String authHeader = "Bearer " + String(GITHUB_TOKEN);
     http.addHeader("Authorization", authHeader);
     
     int httpCode = http.GET();
