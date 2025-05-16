@@ -37,7 +37,7 @@ jobs:
         
     - name: Build firmware
       run: |
-        pio run -e esp32doit-devkit-v1
+        pio run -e esp32dev
         
     - name: Get version from tag
       id: get_version
@@ -50,4 +50,4 @@ jobs:
         gh release create ${{ steps.get_version.outputs.VERSION }} \
           --title "Release ${{ steps.get_version.outputs.VERSION }}" \
           --generate-notes \
-          .pio/build/esp32doit-devkit-v1/firmware.bin
+          .pio/build/esp32dev/firmware.bin
