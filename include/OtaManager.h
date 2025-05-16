@@ -10,8 +10,8 @@
 class OtaManager {
 private:
     static constexpr const char* FIRMWARE_VERSION = "v1.0.0";  
-    static constexpr const char* GITHUB_API = "https://api.github.com/repos/tfxsoftware/TOQUEBOX/releases/latest";
-    static constexpr const char* GITHUB_TOKEN = "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";
+    static constexpr const char* GITHUB_API = "https://api.github.com/repos/Nectar-Labs/toque_box/releases/latest";
+    static constexpr const char* GITHUB_TOKEN = "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";
     
     bool performUpdate(const String& url);
     
@@ -21,7 +21,6 @@ public:
     OtaManager();
     
     bool checkForUpdates();
-    
     const char* getCurrentVersion() const;
 };
 
