@@ -51,8 +51,8 @@ void MqttManager::messageCallback(char* topic, byte* payload, unsigned int lengt
         }
     }
     else if (strcmp(topic, "commands") == 0) {
-        const char* command = doc["command"];
-        if (strcmp(command, "update") == 0) {
+        const char* data = doc["data"];
+        if (strcmp(data, "UPDATE") == 0) {
             Serial.println("Received update command");
             otaManager.checkForUpdates();
         }
