@@ -31,7 +31,7 @@ void MqttManager::messageCallback(char* topic, byte* payload, unsigned int lengt
         Serial.printf("JSON parsing failed: %s\n", error.c_str());
         return;
     }
-
+    if (strcmp(topic, deviceTopic) == 0) {
     const char* data = doc["data"];
     if (!data) {
         Serial.println("No 'data' field in JSON message");
@@ -45,7 +45,15 @@ void MqttManager::messageCallback(char* topic, byte* payload, unsigned int lengt
             Serial.printf("Activating relay %d (GPIO %d)\n", relayNum + 1, hardwareManager.getRelayPin(relayNum));
             hardwareManager.pulseRelay(hardwareManager.getRelayPin(relayNum));
         } else {
-            Serial.printf("Invalid relay number: %d\n", relayNum + 1);
+                Serial.printf("Invalid relay number: %d\n", relayNum + 1);
+            }
+        }
+    }
+    else if (strcmp(topic, "commands") == 0) {
+        const char* command = doc["command"];
+        if (strcmp(command, "update") == 0) {
+            Serial.println("Received update command");
+            otaManager.checkForUpdates();
         }
     }
 }
@@ -74,6 +82,7 @@ void MqttManager::setup() {
         Serial.println("Connected to MQTT server");
         mqttClient.subscribe(deviceTopic);
         Serial.printf("Subscribed to topic: %s\n", deviceTopic);
+        mqttClient.subscribe("commands");
     } else {
         Serial.println("Failed to connect to MQTT server. Will retry in loop...");
     }
@@ -84,6 +93,7 @@ bool MqttManager::reconnect() {
         Serial.println("Reconnected to MQTT server");
         mqttClient.subscribe(deviceTopic);
         Serial.printf("Subscribed to topic: %s\n", deviceTopic);
+        mqttClient.subscribe("commands");
         return true;
     }
     return false;
