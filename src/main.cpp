@@ -36,8 +36,6 @@ void setup() {
     Serial.println("Ethernet connected! No need for WiFi");
     mqttManager.setup();
     
-    Serial.println("Checking for OTA updates...");
-    otaManager.checkForUpdates();
     return;
   }
   
@@ -59,8 +57,6 @@ void setup() {
       apiManager.getDeviceMapping();
       mqttManager.setup();
       
-      Serial.println("Checking for OTA updates...");
-      otaManager.checkForUpdates();
       return;
     } else {
       if(storageManager.isFirstConnection()) {
